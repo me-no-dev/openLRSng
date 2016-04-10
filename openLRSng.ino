@@ -45,7 +45,7 @@
 //####### COMPILATION TARGET #######
 // Enable to compile transmitter code, default is RX
 //#define COMPILE_TX 0 // compile RX code
-//#define COMPILE_TX 1 // compile TX code
+#define COMPILE_TX 1 // compile TX code
 
 //####### BOARD TYPE #######
 // Enable only one of the lines below
@@ -59,14 +59,18 @@
 //#define BOARD_TYPE 7 // PowerTowerRx
 //#define BOARD_TYPE 8 // openLRSng microRx
 //#define BOARD_TYPE 9 // BroversityRX
+#define BOARD_TYPE 10
 
 //### Module type selection (default = 433, only needed for modified HW)
 //#define RFMTYPE 868
 //#define RFMTYPE 915
+#define RFMTYPE 433
 
 //### Enabled Features (some features can be enabled / disabled with compile flag)
 #define CLI // Command-line interface
 #define CONFIGURATOR // Phoenix Serial Protocol (required for Configurator to work)
+
+#define USE_HARDWARE_SPI
 
 //### DEBUG flags, may be dangerous
 //#define TEST_NO_ACK_BY_CH1 // disable sending of acks from RX by channel 1
@@ -88,16 +92,16 @@
 #include "common.h"
 
 #if (COMPILE_TX == 1)
-#include "binary_com.h"
-#include "rxc.h"
-#ifdef CLI_ENABLED
-#include "dialog.h"
-#endif
-#include "frskytx.h"
-#include "chpicker.h"
-#include "TX.h"
+  #include "binary_com.h"
+  #include "rxc.h"
+  #ifdef CLI_ENABLED
+    #include "dialog.h"
+  #endif
+  #include "frskytx.h"
+  #include "chpicker.h"
+  #include "TX.h"
 #else
-#include "I2C.h"
-#include "serialPPM.h"
-#include "RX.h"
+  #include "I2C.h"
+  #include "serialPPM.h"
+  #include "RX.h"
 #endif

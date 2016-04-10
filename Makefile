@@ -19,9 +19,9 @@ ARDUINO_PATH=/usr/share/arduino
 # 6 - Deluxe TX
 # 7 - PowerTowerRX
 #
-BOARD_TYPE=3
-BOARD_TYPES_TX=0 2 3 4 5 6 7 8 9
-BOARD_TYPES_RX=2 3 5 7 8 9
+BOARD_TYPE=10
+BOARD_TYPES_TX=0 2 3 4 5 6 7 8 9 10
+BOARD_TYPES_RX=2 3 5 7 8 9 10
 
 #
 # You can compile all TX as TX, and all RX as either RX or TX.

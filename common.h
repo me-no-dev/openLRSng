@@ -293,7 +293,7 @@ void to_sleep_mode(void);
 void rx_reset(void);
 
 // **** SPI bit banging functions
-
+#ifndef USE_HARDWARE_SPI
 void spiWriteBit(uint8_t b)
 {
   if (b) {
@@ -328,25 +328,6 @@ uint8_t spiReadBit(void)
   return r;
 }
 
-void spiSendCommand(uint8_t command)
-{
-  nSEL_on;
-  SCK_off;
-  nSEL_off;
-
-  for (uint8_t n = 0; n < 8 ; n++) {
-    spiWriteBit(command & 0x80);
-    command = command << 1;
-  }
-
-  SCK_off;
-}
-
-void spiSendAddress(uint8_t i)
-{
-  spiSendCommand(i & 0x7f);
-}
-
 void spiWriteData(uint8_t i)
 {
   for (uint8_t n = 0; n < 8; n++) {
@@ -367,6 +348,34 @@ uint8_t spiReadData(void)
   }
 
   return(Result);
+}
+#else
+void spiWriteData(uint8_t i)
+{
+  SPDR = i;
+  while (!(SPSR & _BV(SPIF)));
+}
+
+uint8_t spiReadData(void)
+{
+  SPDR = 0x00;
+  while (!(SPSR & _BV(SPIF)));
+  return SPDR;
+}
+#endif
+void spiSendCommand(uint8_t command)
+{
+#ifndef USE_HARDWARE_SPI
+  nSEL_on;
+  SCK_off;
+#endif
+  nSEL_off;
+  spiWriteData(command);
+}
+
+void spiSendAddress(uint8_t i)
+{
+  spiSendCommand(i & 0x7f);
 }
 
 uint8_t spiReadRegister(uint8_t address)

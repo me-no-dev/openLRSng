@@ -32,6 +32,7 @@ typedef struct pinMask {
 #define RX_MICRO      0x06
 #define RX_FLYTRONM3  0x07
 #define RX_BRORX      0x08
+#define RX_ME_NO_DEV  0x09
 
 #define PINMAP_PPM    0x20
 #define PINMAP_RSSI   0x21
@@ -142,6 +143,9 @@ void setupSPI()
   pinMode(SCLK_pin, OUTPUT);   //SCLK
   pinMode(IRQ_pin, INPUT);   //IRQ
   pinMode(nSel_pin, OUTPUT);   //nSEL
+#ifdef USE_HARDWARE_SPI
+#error Hardware SPI is not supported on this board
+#endif
 }
 
 #define IRQ_interrupt 1
@@ -226,6 +230,9 @@ void setupSPI()
   pinMode(SCLK_pin, OUTPUT);   //SCLK
   pinMode(IRQ_pin, INPUT);   //IRQ
   pinMode(nSel_pin, OUTPUT);   //nSEL
+#ifdef USE_HARDWARE_SPI
+#error Hardware SPI is not supported on this board
+#endif
 }
 
 #define IRQ_interrupt 0
@@ -365,6 +372,9 @@ void setupSPI()
   pinMode(SCLK_pin, OUTPUT);   //SCLK
   pinMode(IRQ_pin, INPUT);   //IRQ
   pinMode(nSel_pin, OUTPUT);   //nSEL
+#ifdef USE_HARDWARE_SPI
+#error Hardware SPI is not supported on this board
+#endif
 }
 
 #define IRQ_interrupt 0
@@ -535,6 +545,9 @@ void setupSPI()
   pinMode(SCLK_pin, OUTPUT);   //SCLK
   pinMode(IRQ_pin, INPUT);   //IRQ
   pinMode(nSel_pin, OUTPUT);   //nSEL
+#ifdef USE_HARDWARE_SPI
+#error Hardware SPI is not supported on this board
+#endif
 }
 
 #define IRQ_interrupt 0
@@ -643,6 +656,10 @@ void setupSPI()
   pinMode(SCLK_pin, OUTPUT);   //SCLK
   pinMode(IRQ_pin, INPUT);   //IRQ
   pinMode(nSel_pin, OUTPUT);   //nSEL
+#ifdef USE_HARDWARE_SPI
+  SPCR = (SPCR | _BV(MSTR) | _BV(SPE)) & ~(_BV(DORD) | 0x0F);//MASTER,ENABLE,MSBFIRST,MODE0,DIV0
+  SPSR |= 0x01;//SPI2X
+#endif
 }
 
 #define IRQ_interrupt 0
@@ -825,6 +842,10 @@ void setupSPI()
   pinMode(SCLK_pin, OUTPUT);   //SCLK
   pinMode(IRQ_pin, INPUT);   //IRQ
   pinMode(nSel_pin, OUTPUT);   //nSEL
+#ifdef USE_HARDWARE_SPI
+  SPCR = (SPCR | _BV(MSTR) | _BV(SPE)) & ~(_BV(DORD) | 0x0F);//MASTER,ENABLE,MSBFIRST,MODE0,DIV0
+  SPSR |= 0x01;//SPI2X
+#endif
 }
 
 #define IRQ_interrupt 0
@@ -925,6 +946,10 @@ void setupSPI()
   DDRB &= ~(1<<DDB3); // SDO/MISO PB3 input
   pinMode(IRQ_pin, INPUT);   //IRQ
   pinMode(nSel_pin, OUTPUT);   //nSEL
+#ifdef USE_HARDWARE_SPI
+  SPCR = (SPCR | _BV(MSTR) | _BV(SPE)) & ~(_BV(DORD) | 0x0F);//MASTER,ENABLE,MSBFIRST,MODE0,DIV0
+  SPSR |= 0x01;//SPI2X
+#endif
 }
 
 void setupRfmInterrupt()
@@ -1094,6 +1119,10 @@ void setupSPI()
   pinMode(SCLK_pin, OUTPUT);   //SCLK
   pinMode(IRQ_pin, INPUT);   //IRQ
   pinMode(nSel_pin, OUTPUT);   //nSEL
+#ifdef USE_HARDWARE_SPI
+  SPCR = (SPCR | _BV(MSTR) | _BV(SPE)) & ~(_BV(DORD) | 0x0F);//MASTER,ENABLE,MSBFIRST,MODE0,DIV0
+  SPSR |= 0x01;//SPI2X
+#endif
 }
 
 #define IRQ_interrupt 0
@@ -1253,6 +1282,10 @@ void setupSPI()
   pinMode(SCLK_pin, OUTPUT);   //SCLK
   pinMode(IRQ_pin, INPUT);   //IRQ
   pinMode(nSel_pin, OUTPUT);   //nSEL
+#ifdef USE_HARDWARE_SPI
+  SPCR = (SPCR | _BV(MSTR) | _BV(SPE)) & ~(_BV(DORD) | 0x0F);//MASTER,ENABLE,MSBFIRST,MODE0,DIV0
+  SPSR |= 0x01;//SPI2X
+#endif
 }
 
 #define IRQ_interrupt 0
@@ -1415,11 +1448,215 @@ void setupSPI()
   pinMode(SCLK_pin, OUTPUT);   //SCLK
   pinMode(IRQ_pin, INPUT);   //IRQ
   pinMode(nSel_pin, OUTPUT);   //nSEL
+#ifdef USE_HARDWARE_SPI
+  SPCR = (SPCR | _BV(MSTR) | _BV(SPE)) & ~(_BV(DORD) | 0x0F);//MASTER,ENABLE,MSBFIRST,MODE0,DIV0
+  SPSR |= 0x01;//SPI2X
+#endif
 }
 
 #define IRQ_interrupt 0
 void setupRfmInterrupt()
 {
+  attachInterrupt(IRQ_interrupt, RFM22B_Int, FALLING);
+}
+
+#endif
+
+
+
+#if (BOARD_TYPE == 10) // Me-No-Dev
+#if (__AVR_ATmega328P__ != 1) || (F_CPU != 16000000)
+#warning Possibly wrong board selected, select Arduino Pro/Pro Mini 5V/16MHz w/ ATMega328
+#endif
+
+#if (COMPILE_TX == 1)
+// TX operation
+
+#define TelemetrySerial Serial
+
+#define USE_ICP1 // use ICP1 for PPM input for less jitter
+
+#define PPM_IN      8 // ICP1
+
+#define RF_OUT_INDICATOR 9 // only used for Futaba
+
+#define BTN         7 // Shorting 7 to GND will bind
+
+#define BUZZER_PAS  3  // OCR2B
+#define BUZZER_ACT  4
+
+#define TX_AIN0     A4 // SDA
+#define TX_AIN1     A5 // SCL
+
+#define TX_MODE1    A2
+#define TX_MODE2    A3
+
+
+void buzzerInit()
+{
+  pinMode(BUZZER_ACT, OUTPUT);
+  digitalWrite(BUZZER_ACT, LOW);
+  TCCR2A = (1<<WGM21); // mode=CTC
+#if (F_CPU == 16000000)
+  TCCR2B = (1<<CS22) | (1<<CS20); // prescaler = 128
+#elif (F_CPU == 8000000)
+  TCCR2B = (1<<CS22); // prescaler = 64
+#else
+#errror F_CPU Invalid
+#endif
+  pinMode(BUZZER_PAS, OUTPUT);
+  digitalWrite(BUZZER_PAS, LOW);
+}
+
+void buzzerOn(uint16_t freq)
+{
+  if (freq) {
+    uint32_t ocr = 125000L / freq;
+    digitalWrite(BUZZER_ACT,HIGH);
+    if (ocr>255) {
+      ocr=255;
+    }
+    if (!ocr) {
+      ocr=1;
+    }
+    OCR2A = ocr;
+    TCCR2A |= (1<<COM2B0); // enable output
+  } else {
+    digitalWrite(BUZZER_ACT,LOW);
+    TCCR2A &= ~(1<<COM2B0); // disable output
+  }
+}
+
+#else
+// RX operation
+#define PPM_OUT 9 // OCP1A
+#define RSSI_OUT 3 // PD3 OC2B
+
+#define OUTPUTS 13 // outputs available
+
+#define ANALOG0_OUTPUT      2
+#define ANALOG1_OUTPUT      3
+#define ANALOG0_OUTPUT_ALT  4
+#define ANALOG1_OUTPUT_ALT  5
+#define SDA_OUTPUT          6
+#define SCL_OUTPUT          7
+#define LLIND_OUTPUT        8
+#define PPM_OUTPUT          9
+#define RSSI_OUTPUT         10
+#define RXD_OUTPUT          11
+#define TXD_OUTPUT          12
+
+const uint8_t OUTPUT_PIN[OUTPUTS] = { 7, 8, A0, A1, A2, A3, A4, A5, 4, 9, 3, 0, 1};
+
+const pinMask_t OUTPUT_MASKS[OUTPUTS] = {
+  {0x00,0x00,0x80}, // CH1/PWM 7
+  {0x01,0x00,0x00}, // CH2/PWM 8
+  {0x00,0x01,0x00}, // CH3/ANALOG0 A0
+  {0x00,0x02,0x00}, // CH4/ANALOG1 A1
+  {0x00,0x04,0x00}, // CH5/ANALOG0_ALT A2
+  {0x00,0x08,0x00}, // CH6/ANALOG1_ALT A3
+  {0x00,0x10,0x00}, // CH7/SDA A4
+  {0x00,0x20,0x00}, // CH8/SCL A5
+  {0x00,0x00,0x10}, // CH9/LLIND 4
+  {0x02,0x00,0x00}, // CH10/PPM 9
+  {0x00,0x00,0x08}, // CH11/RSSI 3
+  {0x00,0x00,0x01}, // CH12/RXD 0
+  {0x00,0x00,0x02}, // CH13/TXD 1
+};
+
+struct rxSpecialPinMap rxSpecialPins[] = {
+  { 2, PINMAP_ANALOG},
+  { 3, PINMAP_ANALOG},
+  { 4, PINMAP_ANALOG},
+  { 5, PINMAP_ANALOG},
+  { 6, PINMAP_SDA},
+  { 7, PINMAP_SCL},
+  { 8, PINMAP_LLIND},
+  { 9, PINMAP_PPM},
+  { 10, PINMAP_RSSI},
+  { 10, PINMAP_LBEEP},
+  { 11, PINMAP_RXD},
+  { 12, PINMAP_TXD},
+  { 12, PINMAP_SPKTRM},
+  { 12, PINMAP_SBUS},
+  { 12, PINMAP_SUMD},
+};
+
+void rxInitHWConfig()
+{
+  rx_config.rx_type = RX_ME_NO_DEV;
+  rx_config.pinMapping[0] = 0;
+  rx_config.pinMapping[1] = 1;
+  rx_config.pinMapping[2] = 2;
+  rx_config.pinMapping[3] = 3;
+  rx_config.pinMapping[4] = 4;
+  rx_config.pinMapping[5] = 5;
+  rx_config.pinMapping[6] = PINMAP_SDA;
+  rx_config.pinMapping[7] = PINMAP_SCL;
+  rx_config.pinMapping[8] = PINMAP_LLIND;
+  rx_config.pinMapping[9] = PINMAP_PPM;
+  rx_config.pinMapping[10] = PINMAP_RSSI;
+  rx_config.pinMapping[11] = PINMAP_RXD;
+  rx_config.pinMapping[12] = PINMAP_TXD;
+}
+#endif
+
+#define Red_LED 6
+#define Green_LED 5
+
+#if (COMPILE_TX != 1)
+#define Red_LED_ON    PORTD |=  _BV(6);
+#define Red_LED_OFF   PORTD &= ~_BV(6);
+#define Green_LED_ON  PORTD |=  _BV(5);
+#define Green_LED_OFF PORTD &= ~_BV(5);
+#else
+#define Red_LED2   A0
+#define Green_LED2 A1
+#define Red_LED_ON    { PORTD |=  _BV(6); PORTC |=  _BV(0); }
+#define Red_LED_OFF   { PORTD &= ~_BV(6); PORTC &= ~_BV(0); }
+#define Green_LED_ON  { PORTD |=  _BV(5); PORTC |=  _BV(1); }
+#define Green_LED_OFF { PORTD &= ~_BV(5); PORTC &= ~_BV(1); }
+#endif
+
+#define buzzerOff(foo) buzzerOn(0)
+
+#define  SCK_on  PORTB |= _BV(5)            //B5
+#define  SCK_off PORTB &= ~_BV(5)           //B5
+
+#define  SDO_1 ((PINB & _BV(4)) == _BV(4))  //B4
+#define  SDO_0 ((PINB & _BV(4)) == 0x00)    //B4
+
+#define  SDI_on  PORTB |= _BV(3)            //B3
+#define  SDI_off PORTB &= ~_BV(3)           //B3
+
+#define  nSEL_on PORTB |= _BV(2)            //B2
+#define  nSEL_off PORTB &= ~_BV(2)          //B2
+
+#define  nIRQ_1 (PIND & 0x04)==0x04         //D2
+#define  nIRQ_0 (PIND & 0x04)==0x00         //D2
+
+#define SCLK_pin  13
+#define SDO_pin   12
+#define SDI_pin   11
+#define nSel_pin  10
+#define IRQ_pin   2
+
+void setupSPI()
+{
+  pinMode(SDO_pin, INPUT);   //SDO
+  pinMode(SDI_pin, OUTPUT);   //SDI
+  pinMode(SCLK_pin, OUTPUT);   //SCLK
+  pinMode(IRQ_pin, INPUT);   //IRQ
+  pinMode(nSel_pin, OUTPUT);   //nSEL
+#ifdef USE_HARDWARE_SPI
+#warning Using Hardware SPI
+  SPCR = (SPCR | _BV(MSTR) | _BV(SPE)) & ~(_BV(DORD) | 0x0F);//MASTER,ENABLE,MSBFIRST,MODE0,DIV0
+  SPSR |= 0x01;//SPI2X
+#endif
+}
+
+#define IRQ_interrupt 0
+void setupRfmInterrupt(){
   attachInterrupt(IRQ_interrupt, RFM22B_Int, FALLING);
 }
 
